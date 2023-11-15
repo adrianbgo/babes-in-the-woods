@@ -12,6 +12,7 @@ const HostPage = () => {
 
     useEffect(() => {
         socketInitializer();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [host]);
 
     const socketInitializer = async () => {

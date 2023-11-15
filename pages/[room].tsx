@@ -13,6 +13,7 @@ const Room = () => {
 
     useEffect(() => {
         socketInitializer(name as string);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [name])
     let socket = io();
 
