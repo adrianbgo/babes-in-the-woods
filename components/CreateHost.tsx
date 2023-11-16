@@ -11,7 +11,6 @@ const CreateHost = () => {
 
     const redirectHost = async (room: string, _: string, __: string) => {
         const res = await fetch(`/api/socket?option=room&room=${room}`);
-        console.log(await res);
         const posts = await res.json();
         if (!posts.thereIs) {
             router.push(

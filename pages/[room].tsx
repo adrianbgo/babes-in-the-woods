@@ -1,29 +1,40 @@
 import GameRoom from '@/components/GameRoom';
 import JoinForm from '@/components/JoinForm';
+import PlayerSheet from '@/components/PlayerSheet';
 import WaitingRoom from '@/components/WaitingRoom';
+import { testCharacter } from '@/utils/testutils';
 import { useRouter } from 'next/router'
 import React, { useEffect, useRef, useState } from 'react'
-import { io } from 'socket.io-client';
+import { Socket, io } from 'socket.io-client';
 
-const Room = () => {
+let socket: Socket
+
+function Room() {
     const router = useRouter();
     const { room, name } = router.query;
     const [name2, setName2] = useState<string>('');
     const [path, setPath] = useState<string>(' ');
+    const initialized = useRef(false);
 
     useEffect(() => {
-        socketInitializer(name as string);
+        if (!initialized.current) {
+            socketInitializer(name as string);
+            initialized.current = true;
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [name])
-    let socket = io();
+    }, [name]);
 
-    const socketInitializer = async (name: string) => {
+    const socketInitializer = async (_name: string) => {
         try {
-            console.log('here 1');
             await fetch("/api/socket?option=connection");
             socket = io();
+
             socket.on('connect', () => {
-                if (name != undefined) joinRoom(room as string, name);
+                if (_name != undefined) joinRoom(room as string, _name);
+            });
+
+            socket.on('start-game', () => {
+                setPath('play-room');
             })
         } catch (e) {
             console.error('Error: ', e);
@@ -35,28 +46,28 @@ const Room = () => {
         socket.emit('send-to-host', { room, name, id: socket.id });
         setName2(name);
         setPath('wait');
-    }
+    };
 
     switch (path) {
         case "wait":
             return (
                 <WaitingRoom />
-            )
+            );
         case "play-room":
             return (
-                <GameRoom />
-            )
+                <PlayerSheet character={testCharacter} />
+            );
         default:
             return (
-                <>
+                <div className='h-screen w-screen'>
                     <section>
                         <p>Welcome {name} to the room {room}</p>
                         {name == undefined && (
                             <JoinForm type="room" btnFunction={joinRoom} room={room as string} />
                         )}
                     </section>
-                </>
-            )
+                </div>
+            );
     }
 }
 
